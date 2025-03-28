@@ -3,27 +3,58 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReservationResource\Pages;
-use App\Filament\Resources\ReservationResource\RelationManagers;
 use App\Models\Reservation;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ReservationResource extends Resource
 {
     protected static ?string $model = Reservation::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Reservasi';
+    protected static ?string $pluralLabel = 'Reservasi';
+    protected static ?string $slug = 'reservations';
 
-    public static function form(Form $form): Form
+    public static function form(Form $form): Form // ✅ Perbaikan tipe yang benar
     {
         return $form
             ->schema([
-                //
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('User')
+                    ->searchable()
+                    ->required(),
+
+                Select::make('room_id')
+                    ->relationship('room', 'room_type')
+                    ->label('Kamar')
+                    ->searchable()
+                    ->required(),
+
+                DatePicker::make('check_in')
+                    ->label('Tanggal Check-in')
+                    ->required(),
+
+                DatePicker::make('check_out')
+                    ->label('Tanggal Check-out')
+                    ->required(),
+
+                Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'pending' => 'Menunggu Konfirmasi',
+                        'confirmed' => 'Dikonfirmasi',
+                        'canceled' => 'Dibatalkan',
+                    ])
+                    ->default('pending')
+                    ->required(),
             ]);
     }
 
@@ -31,26 +62,60 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+
+                TextColumn::make('user.name')
+                    ->label('User')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('room.room_type')
+                    ->label('Kamar')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('check_in')
+                    ->label('Check-in')
+                    ->sortable()
+                    ->date(),
+
+                TextColumn::make('check_out')
+                    ->label('Check-out')
+                    ->sortable()
+                    ->date(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->sortable()
+                    ->badge()
+                    ->colors([
+                        'pending' => 'warning',
+                        'confirmed' => 'success',
+                        'canceled' => 'danger',
+                    ]),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('Filter Status')
+                    ->options([
+                        'pending' => 'Menunggu Konfirmasi',
+                        'confirmed' => 'Dikonfirmasi',
+                        'canceled' => 'Dibatalkan',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
