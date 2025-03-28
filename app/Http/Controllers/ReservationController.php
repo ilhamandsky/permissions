@@ -1,22 +1,53 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Reservation;
 use Illuminate\Http\Request;
-class ReservationController extends Controller {
-    public function index() {
-        return view('admin.reservations', ['reservations' => Reservation::all()]);
+use Illuminate\Support\Facades\Auth;
+
+class ReservationController extends Controller
+{
+    // Menampilkan daftar reservasi milik user yang sedang login
+    public function index()
+    {
+        $reservations = Reservation::where('user_id', Auth::id())->get();
+        return view('reservations.index', compact('reservations'));
     }
-    public function store(Request $request) {
-        Reservation::create($request->all());
-        return back();
+
+    // Menyimpan pemesanan kamar
+    public function store(Request $request)
+    {
+        $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'check_in' => 'required|date',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        Reservation::create([
+            'user_id' => Auth::id(),
+            'room_id' => $request->room_id,
+            'check_in' => $request->check_in,
+            'check_out' => $request->check_out,
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('reservations.index')->with('success', 'Pemesanan berhasil.');
     }
-    public function accept($id) {
-        Reservation::findOrFail($id)->update(['status' => 'accepted']);
-        return back();
-    }
-    public function reject($id) {
-        Reservation::findOrFail($id)->update(['status' => 'rejected']);
-        return back();
+
+    // Membatalkan reservasi (hanya jika masih pending)
+    public function cancel(Reservation $reservation)
+    {
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki izin untuk membatalkan reservasi ini.');
+        }
+
+        if ($reservation->status !== 'pending') {
+            return redirect()->route('reservations.index')->with('error', 'Reservasi tidak bisa dibatalkan.');
+        }
+
+        $reservation->delete();
+
+        return redirect()->route('reservations.index')->with('success', 'Reservasi berhasil dibatalkan.');
     }
 }
