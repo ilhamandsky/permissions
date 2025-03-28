@@ -22,10 +22,11 @@ class ReservationResource extends Resource
     protected static ?string $pluralLabel = 'Reservasi';
     protected static ?string $slug = 'reservations';
 
-    public static function form(Form $form): Form // ✅ Perbaikan tipe yang benar
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                // Menggunakan relationship() untuk menghindari error
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->label('User')
@@ -66,15 +67,19 @@ class ReservationResource extends Resource
                     ->label('ID')
                     ->sortable(),
 
+                // Menangani kemungkinan user null
                 TextColumn::make('user.name')
                     ->label('User')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state, $record) => $record->user?->name ?? 'Tidak Ada'),
 
+                // Menangani kemungkinan room null
                 TextColumn::make('room.room_type')
                     ->label('Kamar')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state, $record) => $record->room?->room_type ?? 'Tidak Ada'),
 
                 TextColumn::make('check_in')
                     ->label('Check-in')
