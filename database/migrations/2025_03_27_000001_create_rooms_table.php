@@ -9,15 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->foreignId('hotel_id')->constrained()->onDelete('cascade');
             $table->string('room_type');
-            $table->integer('capacity');
-            $table->decimal('price', 10, 2);
-            $table->boolean('available')->default(true);
+            $table->integer('price');
+            $table->enum('status', ['available', 'booked'])->default('available');
             $table->timestamps();
         });
     }
