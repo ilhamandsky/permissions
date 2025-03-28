@@ -36,25 +36,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/hotels/{id}', [HotelController::class, 'show'])->where('id', '[0-9]+')->name('hotels.show'); // Detail hotel
 Route::post('/reservations', [ReservationController::class, 'store'])->middleware('auth')->name('reservations.store');
 
-// Route admin dengan prefix '/admin'
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
 
-    // Manajemen kamar
-    Route::get('/rooms', [RoomController::class, 'index'])->name('admin.rooms.index');
-    Route::post('/rooms', [RoomController::class, 'store'])->name('admin.rooms.store');
-    Route::put('/rooms/{id}', [RoomController::class, 'update'])->where('id', '[0-9]+')->name('admin.rooms.update');
-    Route::delete('/rooms/{id}', [RoomController::class, 'destroy'])->where('id', '[0-9]+')->name('admin.rooms.destroy');
-
-    // Manajemen reservasi
-    Route::get('/reservations', [ReservationController::class, 'index'])->name('admin.reservations.index');
-    Route::post('/reservations/{id}/accept', [ReservationController::class, 'accept'])->where('id', '[0-9]+')->name('admin.reservations.accept');
-    Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject'])->where('id', '[0-9]+')->name('admin.reservations.reject');
-});
-
-// Route untuk login admin
 
 
 require __DIR__.'/auth.php';
