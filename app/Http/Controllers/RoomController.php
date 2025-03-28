@@ -5,7 +5,7 @@ use App\Models\Room;
 use Illuminate\Http\Request;
 class RoomController extends Controller {
     public function index() {
-        return view('admin.rooms', ['rooms' => Room::all()]);
+        return view('admin.dashboard', ['rooms' => Room::all()]);
     }
     public function store(Request $request) {
         Room::create($request->all());
